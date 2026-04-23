@@ -37,6 +37,9 @@ export default function LoginForm({ onLoginSuccess, onSwitchToRegister }) {
 
       if (response && response.accessToken) {
         sessionStorage.setItem('token', response.accessToken);
+        if (response.refreshToken) {
+          sessionStorage.setItem('refreshToken', response.refreshToken);
+        }
         setFormData({ username: '', password: '' }); 
         toast.success("Inicio de sesión exitoso");
         onLoginSuccess();

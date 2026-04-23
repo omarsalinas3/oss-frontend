@@ -14,6 +14,16 @@ export default function Dashboard({ onLogout }) {
 
   const [loading, setLoading] = useState(false);
 
+  // Decodificar Token para determinar rol_id localmente
+  const token = sessionStorage.getItem('token');
+  let isAdmin = false;
+  if (token) {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      isAdmin = payload.rol_id === 1;
+    } catch(e) {}
+  }
+
   useEffect(() => {
     fetchTasks();
     fetchUsers();
@@ -341,8 +351,14 @@ export default function Dashboard({ onLogout }) {
                      <small style={{ color: 'var(--text-muted)' }}>Creado: {new Date(u.created_at).toLocaleDateString()}</small>
                    </div>
                    <div style={{ display: 'flex', gap: '10px' }}>
-                     <button className="btn-warning" style={{ width: 'auto' }} onClick={() => handleEditUser(u)}>Editar</button>
-                     <button className="btn-danger" style={{ width: 'auto' }} onClick={() => handleDeleteUser(u.id)}>Eliminar</button>
+                     {isAdmin ? (
+                       <>
+                         <button className="btn-warning" style={{ width: 'auto' }} onClick={() => handleEditUser(u)}>Editar</button>
+                         <button className="btn-danger" style={{ width: 'auto' }} onClick={() => handleDeleteUser(u.id)}>Eliminar</button>
+                       </>
+                     ) : (
+                       <span style={{ color: 'var(--text-muted)', fontStyle: 'italic', fontSize: '0.8rem' }}>Sin permisos de edición</span>
+                     )}
                    </div>
                  </li>
               ))}
