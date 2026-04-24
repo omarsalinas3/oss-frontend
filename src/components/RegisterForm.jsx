@@ -70,7 +70,7 @@ export default function RegisterForm({ onSwitchToLogin }) {
             value={formData.name}
             onChange={(e) => setFormData({...formData, name: e.target.value})}
             required
-            maxLength="100"
+            maxLength="50"
             autoComplete="off"
             style={{ borderColor: (formData.name && !isValidName(formData.name)) ? 'var(--error)' : 'var(--border-color)' }}
           />
@@ -87,7 +87,7 @@ export default function RegisterForm({ onSwitchToLogin }) {
             value={formData.lastname}
             onChange={(e) => setFormData({...formData, lastname: e.target.value})}
             required
-            maxLength="100"
+            maxLength="50"
             autoComplete="off"
             style={{ borderColor: (formData.lastname && !isValidName(formData.lastname)) ? 'var(--error)' : 'var(--border-color)' }}
           />
@@ -104,12 +104,12 @@ export default function RegisterForm({ onSwitchToLogin }) {
             value={formData.username}
             onChange={(e) => setFormData({...formData, username: e.target.value})}
             required
-            maxLength="20"
+            maxLength="15"
             autoComplete="off"
             style={{ borderColor: (formData.username && !isValidUsername(formData.username)) ? 'var(--error)' : 'var(--border-color)' }}
           />
           {(formData.username && !isValidUsername(formData.username)) && (
-              <small style={{ color: 'var(--error)' }}>Solo alfanuméricos y guiones bajos (3-20 caracteres).</small>
+              <small style={{ color: 'var(--error)' }}>Solo alfanuméricos y guiones bajos (3-15 caracteres).</small>
           )}
         </div>
         

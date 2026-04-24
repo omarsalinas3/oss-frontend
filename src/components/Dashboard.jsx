@@ -12,6 +12,9 @@ export default function Dashboard({ onLogout }) {
   const [users, setUsers] = useState([]);
   const [userFormData, setUserFormData] = useState({ id: null, name: '', lastname: '', username: '', password: '' });
 
+  const [logs, setLogs] = useState([]);
+  const [auditFilters, setAuditFilters] = useState({ date: '', userId: '', severity: '' });
+
   const [loading, setLoading] = useState(false);
 
   // Decodificar Token para determinar rol_id localmente
@@ -27,7 +30,17 @@ export default function Dashboard({ onLogout }) {
   useEffect(() => {
     fetchTasks();
     fetchUsers();
-  }, []);
+    if (isAdmin) fetchLogs();
+  }, [isAdmin]);
+
+  const fetchLogs = async () => {
+    try {
+      const res = await api.get('/api/log');
+      setLogs(Array.isArray(res) ? res : []); 
+    } catch (err) {
+      // Silencioso
+    }
+  };
 
   const fetchTasks = async () => {
     try {
@@ -44,7 +57,7 @@ export default function Dashboard({ onLogout }) {
       const res = await api.get('/api/user');
       setUsers(Array.isArray(res) ? res : []); 
     } catch (err) {
-      console.error(err);
+      // Silencioso
     }
   };
 
@@ -188,6 +201,15 @@ export default function Dashboard({ onLogout }) {
         >
           Gestión de Usuarios
         </button>
+        {isAdmin && (
+          <button 
+            className={activeTab === 'audit' ? 'btn-primary' : 'btn-secondary'}
+            style={{ flex: 1, padding: '12px' }}
+            onClick={() => setActiveTab('audit')}
+          >
+            Auditoría de Seguridad
+          </button>
+        )}
       </div>
 
       {activeTab === 'tasks' && (
@@ -202,7 +224,7 @@ export default function Dashboard({ onLogout }) {
                   value={taskFormData.name}
                   onChange={(e) => setTaskFormData({...taskFormData, name: e.target.value})}
                   required
-                  maxLength="150"
+                  maxLength="50"
                   style={{ borderColor: (taskFormData.name && !isValidTextDescription(taskFormData.name)) ? 'var(--error)' : 'var(--border-color)' }}
                 />
                 {(taskFormData.name && !isValidTextDescription(taskFormData.name)) && (
@@ -215,7 +237,7 @@ export default function Dashboard({ onLogout }) {
                   value={taskFormData.description}
                   onChange={(e) => setTaskFormData({...taskFormData, description: e.target.value})}
                   required
-                  maxLength="200"
+                  maxLength="100"
                   rows={3}
                   style={{ borderColor: (taskFormData.description && !isValidTextDescription(taskFormData.description)) ? 'var(--error)' : 'var(--border-color)' }}
                 />
@@ -292,14 +314,14 @@ export default function Dashboard({ onLogout }) {
               <div style={{ display: 'flex', gap: '15px', marginBottom: '15px' }}>
                 <div style={{ flex: 1 }}>
                   <label>Nombre(s):</label>
-                  <input type="text" value={userFormData.name} onChange={(e) => setUserFormData({...userFormData, name: e.target.value})} required maxLength="100" style={{ borderColor: (userFormData.name && !isValidName(userFormData.name)) ? 'var(--error)' : 'var(--border-color)' }} />
+                  <input type="text" value={userFormData.name} onChange={(e) => setUserFormData({...userFormData, name: e.target.value})} required maxLength="50" style={{ borderColor: (userFormData.name && !isValidName(userFormData.name)) ? 'var(--error)' : 'var(--border-color)' }} />
                   {(userFormData.name && !isValidName(userFormData.name)) && (
                     <small style={{ color: 'var(--error)', display: 'block', marginTop: '5px' }}>Letras y espacios únicamente (min 2).</small>
                   )}
                 </div>
                 <div style={{ flex: 1 }}>
                   <label>Apellidos:</label>
-                  <input type="text" value={userFormData.lastname} onChange={(e) => setUserFormData({...userFormData, lastname: e.target.value})} required maxLength="100" style={{ borderColor: (userFormData.lastname && !isValidName(userFormData.lastname)) ? 'var(--error)' : 'var(--border-color)' }} />
+                  <input type="text" value={userFormData.lastname} onChange={(e) => setUserFormData({...userFormData, lastname: e.target.value})} required maxLength="50" style={{ borderColor: (userFormData.lastname && !isValidName(userFormData.lastname)) ? 'var(--error)' : 'var(--border-color)' }} />
                   {(userFormData.lastname && !isValidName(userFormData.lastname)) && (
                     <small style={{ color: 'var(--error)', display: 'block', marginTop: '5px' }}>Letras y espacios únicamente (min 2).</small>
                   )}
@@ -307,9 +329,9 @@ export default function Dashboard({ onLogout }) {
               </div>
               <div style={{ marginBottom: '15px' }}>
                 <label>Nombre de Usuario:</label>
-                <input type="text" value={userFormData.username} onChange={(e) => setUserFormData({...userFormData, username: e.target.value})} required maxLength="20" style={{ borderColor: (userFormData.username && !isValidUsername(userFormData.username)) ? 'var(--error)' : 'var(--border-color)' }} />
+                <input type="text" value={userFormData.username} onChange={(e) => setUserFormData({...userFormData, username: e.target.value})} required maxLength="15" style={{ borderColor: (userFormData.username && !isValidUsername(userFormData.username)) ? 'var(--error)' : 'var(--border-color)' }} />
                 {(userFormData.username && !isValidUsername(userFormData.username)) && (
-                    <small style={{ color: 'var(--error)' }}>Solo alfanuméricos y guiones bajos (3-20 caracteres).</small>
+                    <small style={{ color: 'var(--error)' }}>Solo alfanuméricos y guiones bajos (3-15 caracteres).</small>
                 )}
               </div>
               <div style={{ marginBottom: '25px' }}>
@@ -346,7 +368,7 @@ export default function Dashboard({ onLogout }) {
                    alignItems: 'center'
                  }}>
                    <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                     <strong style={{ fontSize: '1.1rem' }}>{u.username}</strong> 
+                     <strong style={{ fontSize: '1.1rem' }}>{u.username} <span style={{fontSize: '0.8rem', color: 'var(--text-muted)'}}>(ID: {u.id})</span></strong> 
                      <p style={{ margin: 0, color: 'var(--text-muted)' }}>{u.name} {u.lastname}</p>
                      <small style={{ color: 'var(--text-muted)' }}>Creado: {new Date(u.created_at).toLocaleDateString()}</small>
                    </div>
@@ -365,6 +387,74 @@ export default function Dashboard({ onLogout }) {
             </ul>
           </div>
         </>
+      )}
+
+      {activeTab === 'audit' && isAdmin && (
+        <div className="glass-panel" style={{ padding: '30px' }}>
+          <h3 style={{ marginBottom: '20px' }}>Auditoría de Seguridad y Accesos</h3>
+          
+          <div style={{ display: 'flex', gap: '15px', marginBottom: '20px', padding: '15px', background: 'rgba(0,0,0,0.2)', borderRadius: '8px' }}>
+            <div style={{ flex: 1 }}>
+              <label style={{ fontSize: '0.85rem' }}>ID Usuario:</label>
+              <input type="number" placeholder="Filtrar por User ID" value={auditFilters.userId} onChange={(e) => setAuditFilters({...auditFilters, userId: e.target.value})} />
+            </div>
+            <div style={{ flex: 1 }}>
+              <label style={{ fontSize: '0.85rem' }}>Fecha exacta:</label>
+              <input type="date" value={auditFilters.date} onChange={(e) => setAuditFilters({...auditFilters, date: e.target.value})} />
+            </div>
+            <div style={{ flex: 1 }}>
+              <label style={{ fontSize: '0.85rem' }}>Severidad (Tipo de Evento):</label>
+              <select value={auditFilters.severity} onChange={(e) => setAuditFilters({...auditFilters, severity: e.target.value})} style={{ width: '100%', padding: '12px', background: 'var(--bg-panel)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '6px' }}>
+                <option value="">Todas</option>
+                <option value="success">Auditoría de Éxito</option>
+                <option value="error">Fallo de Seguridad / Error Técnico</option>
+              </select>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+              <button className="btn-secondary" onClick={() => setAuditFilters({ date: '', userId: '', severity: '' })}>Limpiar</button>
+            </div>
+          </div>
+
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
+              <thead>
+                <tr style={{ borderBottom: '1px solid var(--border-color)', color: 'var(--primary)' }}>
+                  <th style={{ padding: '10px' }}>Fecha</th>
+                  <th style={{ padding: '10px' }}>Status</th>
+                  <th style={{ padding: '10px' }}>Usuario ID</th>
+                  <th style={{ padding: '10px' }}>Ruta / Evento</th>
+                  <th style={{ padding: '10px' }}>Mensaje/Error</th>
+                </tr>
+              </thead>
+              <tbody>
+                {logs
+                  .filter(log => {
+                    if (auditFilters.date && new Date(log.timestamp).toISOString().split('T')[0] !== auditFilters.date) return false;
+                    if (auditFilters.userId && String(log.session_id) !== auditFilters.userId) return false;
+                    if (auditFilters.severity === 'success' && log.statusCode >= 400) return false;
+                    if (auditFilters.severity === 'error' && log.statusCode < 400) return false;
+                    return true;
+                  })
+                  .map(log => (
+                  <tr key={log.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                    <td style={{ padding: '10px' }}>{new Date(log.timestamp).toLocaleString()}</td>
+                    <td style={{ padding: '10px' }}>
+                      <span style={{ 
+                        padding: '2px 8px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 'bold',
+                        background: log.statusCode >= 400 ? 'var(--error)' : 'var(--primary)', color: '#000'
+                      }}>
+                        {log.statusCode}
+                      </span>
+                    </td>
+                    <td style={{ padding: '10px' }}>{log.session_id ? `UserID: ${log.session_id}` : 'Anónimo/Inválido'}</td>
+                    <td style={{ padding: '10px' }}>{log.path} <br/><small style={{color:'var(--text-muted)'}}>{log.errorCode}</small></td>
+                    <td style={{ padding: '10px', wordBreak: 'break-all' }}>{log.error}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
       )}
 
     </div>

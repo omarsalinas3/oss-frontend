@@ -64,7 +64,7 @@ export default function LoginForm({ onLoginSuccess, onSwitchToRegister }) {
             value={formData.username}
             onChange={(e) => setFormData({...formData, username: e.target.value})}
             required
-            maxLength="20"
+            maxLength="15"
             autoComplete="off"
           />
         </div>
